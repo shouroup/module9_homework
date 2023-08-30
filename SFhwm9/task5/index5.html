@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image List App</title>
+</head>
+<body>
+  <label for="pageInput">Номер страницы:</label>
+  <input type="number" id="pageInput" min="1" max="10">
+  <label for="limitInput">Лимит:</label>
+  <input type="number" id="limitInput" min="1" max="10">
+  <button id="requestButton">Запрос</button>
+  <div id="imageList"></div>
+
+  <script>
+    const pageInput = document.getElementById('pageInput');
+    const limitInput = document.getElementById('limitInput');
+    const requestButton = document.getElementById('requestButton');
+    const imageList = document.getElementById('imageList');
+
+    requestButton.addEventListener('click', async () => {
+      const pageNumber = parseInt(pageInput.value);
+      const limitNumber = parseInt(limitInput.value);
+
+      let isValid = true;
+      let errorMessage = '';
+
+      if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 10) {
+        isValid = false;
+        errorMessage = 'Номер страницы вне диапазона от 1 до 10';
+      } else if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 10) {
+        isValid = false;
+        errorMessage = 'Лимит вне диапазона от 1 до 10';
+      }
+
+      if (!isValid) {
+        imageList.innerHTML = errorMessage;
+        return;
+      }
+
+      const url = `https://picsum.photos/v2/list?page=${pageNumber}&limit=${limitNumber}`;
+
+      try {
+        const response = await fetch(url);
+
+        if (response.ok) {
+          const imageData = await response.json();
+
+          localStorage.setItem('imageData', JSON.stringify(imageData));
+
+          imageList.innerHTML = '';
+
+          imageData.forEach(image => {
+            const imageElement = document.createElement('img');
+            imageElement.src = image.download_url;
+            imageElement.alt = 'Random Image';
+            imageList.appendChild(imageElement);
+          });
+        } else {
+          console.error('Request failed with status:', response.status);
+        }
+      } catch (error) {
+        console.error('Request error:', error);
+      }
+    });
+
+    window.addEventListener('load', () => {
+      const savedImageData = localStorage.getItem('imageData');
+
+      if (savedImageData) {
+        const imageData = JSON.parse(savedImageData);
+
+        imageList.innerHTML = '';
+
+        imageData.forEach(image => {
+          const imageElement = document.createElement('img');
+          imageElement.src = image.download_url;
+          imageElement.alt = 'Random Image';
+          imageList.appendChild(imageElement);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

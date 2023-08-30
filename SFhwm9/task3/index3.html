@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Images App</title>
+</head>
+<body>
+  <input type="number" id="numberInput" placeholder="Enter a number between 1 and 10" min="1" max="10">
+  <button id="submitButton">Submit</button>
+  <div id="imageContainer"></div>
+
+  <script>
+    const numberInput = document.getElementById('numberInput');
+    const submitButton = document.getElementById('submitButton');
+    const imageContainer = document.getElementById('imageContainer');
+
+    submitButton.addEventListener('click', () => {
+      const enteredNumber = parseInt(numberInput.value);
+
+      if (enteredNumber >= 1 && enteredNumber <= 10) {
+        const url = `https://picsum.photos/v2/list?limit=${enteredNumber}`;
+        
+        // Создаем новый объект XHR
+        const xhr = new XMLHttpRequest();
+
+        xhr.open('GET', url, true);
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            const responseData = JSON.parse(xhr.responseText);
+
+            // Очищаем контейнер перед добавлением новых изображений
+            imageContainer.innerHTML = '';
+
+            responseData.forEach(imageData => {
+              const imageElement = document.createElement('img');
+              imageElement.src = imageData.download_url;
+              imageElement.alt = 'Random Image';
+              imageContainer.appendChild(imageElement);
+            });
+          } else {
+            console.error('Request failed with status:', xhr.status);
+          }
+        };
+
+        xhr.onerror = function () {
+          console.error('Request error');
+        };
+
+        xhr.send();
+      } else {
+        imageContainer.innerHTML = 'Число вне диапазона от 1 до 10';
+      }
+    });
+  </script>
+</body>
+</html>
